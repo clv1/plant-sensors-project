@@ -1,0 +1,9 @@
+venv
+__pytest_cache__
+.ds_store
+.env
+.terraform
+
+
+*.csv
+*.json
