@@ -8,3 +8,4 @@ __pytest_cache__
 *.csv
 *.json
 *.sh
+__pycache__

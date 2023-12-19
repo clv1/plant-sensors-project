@@ -37,6 +37,7 @@ def get_plant_data(plant_data) -> list[list[str]]:
 
 
 def clean_data(df: pd.DataFrame) -> None:
+    # remove_bad_temp = (pd.to_numeric(df.temperature) <= )
     pass
 
 
@@ -102,6 +103,7 @@ def transform_main(plant_data: list[list[dict]]) -> pd.DataFrame:
         data_segments = pool.map(get_plant_data, plant_data)
         df = pd.DataFrame(columns=COLUMNS)
 
+        # clean_data_segments = pool.map(clean_data, data_segments)
         for dataframe_segment in data_segments:
             df = df._append(dataframe_segment, ignore_index=True)
 
@@ -112,4 +114,4 @@ if __name__ == "__main__":
     plant_data = extract_main()
     df = transform_main(plant_data)
 
-    print(df)
+    print(df["temperature"])
