@@ -1,12 +1,10 @@
-
-
+USE plants; 
 GO
 
 DROP TABLE s_alpha.plant;
 DROP TABLE s_alpha.recording_event;
 DROP TABLE s_alpha.botanist;
 DROP TABLE s_alpha.origin_location;
-
 GO
 
 CREATE TABLE s_alpha.plant (
@@ -17,6 +15,7 @@ CREATE TABLE s_alpha.plant (
     image_url VARCHAR(300) NOT NULL,
     PRIMARY KEY (plant_id)
 );
+GO
 
 CREATE TABLE s_alpha.recording_event (
     recording_id INT NOT NULL IDENTITY(1, 1) PRIMARY KEY,
@@ -30,6 +29,7 @@ CREATE TABLE s_alpha.recording_event (
     FOREIGN KEY (plant_id) REFERENCES plant(plant_id),
     FOREIGN KEY (botanist_id) REFERENCES botanist(botanist_id)
     );
+GO
 
 
 CREATE TABLE s_alpha.botanist (
@@ -40,7 +40,7 @@ CREATE TABLE s_alpha.botanist (
     phone_number VARCHAR(30) NOT NULL,
     PRIMARY KEY (botanist_id)
     );
-
+GO
 
 
 CREATE TABLE s_alpha.origin_location (
@@ -53,12 +53,4 @@ CREATE TABLE s_alpha.origin_location (
     continent VARCHAR(50) NOT NULL,
     PRIMARY KEY (origin_location_id)
 );
-
-
-
--- go
-
--- INSERT INTO s_alpha.recording_event
---     (plant_id, botanist_id, soil_moisture, temperature, recording_taken, last_watered) 
--- VALUES 
---     ();
+GO
