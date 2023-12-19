@@ -1,11 +1,17 @@
+"""Contains functions that collate and clean data extracted into a pandas dataframe."""
 
+from datetime import datetime
 from multiprocessing import Pool
 import pandas as pd
-from datetime import datetime
 from extract import extract_main
 
-COLUMNS = ['plant_id', 'name', 'scientific_name', 'last_watered', 'recording_taken', 'soil_moisture', 'temperature', 'email',
-           'botanist_first_name', 'botanist_last_name', 'phone_number', 'image_url', 'longitude', 'latitude', 'town', 'country', 'country_abbreviation', 'continent']
+COLUMNS = ['plant_id', 'name', 'scientific_name', 'last_watered', 'recording_taken',
+           'soil_moisture', 'temperature', 'email', 'botanist_first_name',
+           'botanist_last_name', 'phone_number', 'image_url', 'longitude',
+           'latitude', 'town', 'country', 'country_abbreviation', 'continent']
+
+MIN_TEMP = 0
+MAX_TEMP = 25
 
 
 def get_plant_data(plant_data) -> list[list[str]]:
@@ -31,27 +37,32 @@ def get_plant_data(plant_data) -> list[list[str]]:
         recording_taken = get_recording_taken(plant)
 
         data.append([plant.get("plant_id"), plant.get(
-            "name"), scientific_name, last_watered, recording_taken, plant.get("soil_moisture"), plant.get("temperature"), email, first_name, last_name, phone_number, image_url, longitude, latitude, town, country, country_abbreviation, continent])
+            "name"), scientific_name, last_watered, recording_taken, plant.get("soil_moisture"),
+            plant.get("temperature"), email, first_name, last_name, phone_number,
+            image_url, longitude, latitude, town, country, country_abbreviation, continent])
 
     return make_dataframe(data)
 
 
 def clean_data(df: pd.DataFrame) -> None:
-    # remove_bad_temp = (pd.to_numeric(df.temperature) <= )
-    pass
+    """Cleans invalid data from the dataframe"""
+    remove_bad_temp = (pd.to_numeric(df.temperature) <= MIN_TEMP) | (
+        pd.to_numeric(df.temperature) >= MAX_TEMP)
 
+    df = df.drop(df[remove_bad_temp].index)
 
-def format_phone_number():
-    pass
+    return df
 
 
 def get_recording_taken(response: dict):
+    """Converts recording_taken time to a datetime object"""
     recording_taken = response.get("recording_taken")
     return datetime.strptime(recording_taken,
                              '%Y-%m-%d %H:%M:%S')
 
 
 def get_last_watered(response: dict) -> str:
+    """Converts last_watered time to a datetime object"""
     last_watered = response.get("last_watered")
     return datetime.strptime(last_watered,
                              '%a, %d %b %Y %H:%M:%S %Z')
@@ -99,12 +110,14 @@ def make_dataframe(plants: list[list]) -> pd.DataFrame:
 
 
 def transform_main(plant_data: list[list[dict]]) -> pd.DataFrame:
+    """Takes data segments and parallel processes them to create a single dataframe."""
     with Pool(processes=4) as pool:
         data_segments = pool.map(get_plant_data, plant_data)
         df = pd.DataFrame(columns=COLUMNS)
 
-        # clean_data_segments = pool.map(clean_data, data_segments)
-        for dataframe_segment in data_segments:
+        clean_data_segments = pool.map(clean_data, data_segments)
+        for dataframe_segment in clean_data_segments:
+            print(dataframe_segment)
             df = df._append(dataframe_segment, ignore_index=True)
 
     return df
@@ -112,6 +125,6 @@ def transform_main(plant_data: list[list[dict]]) -> pd.DataFrame:
 
 if __name__ == "__main__":
     plant_data = extract_main()
-    df = transform_main(plant_data)
+    dataframe = transform_main(plant_data)
 
-    print(df)
+    print(dataframe)
