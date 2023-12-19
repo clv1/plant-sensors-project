@@ -30,7 +30,7 @@ resource "aws_ecr_repository" "c9-persnickety-pipeline-repo-t" {
 
 # Dashboard ECR
 resource "aws_ecr_repository" "c9-persnickety-dashboard-repo-t" {
-  name = "c9-persnickety-doashboard-repo-t"
+  name = "c9-persnickety-dashboard-repo-t"
   image_scanning_configuration {
     scan_on_push = false
   }
