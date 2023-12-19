@@ -1,17 +1,16 @@
+from multiprocessing import Pool
 import requests
 import pandas as pd
 
 
-def get_plant_data() -> list[list[str]]:
-    plant_range = [num for num in range(0, 51
-                                        )]
+def get_plant_data(plant_range: list[int]) -> list[list[str]]:
     url = "https://data-eng-plants-api.herokuapp.com/plants/"
-    # return [requests.get(f'{url}{plant}').json() for plant in plant_range]
     data = []
     i = 1
     for plant in plant_range:
-        print(i)
+        print(f"{i}/{len(plant_range)}")
         i += 1
+
         response = requests.get(f'{url}{plant}').json()
 
         if response.get("error"):
@@ -26,10 +25,13 @@ def get_plant_data() -> list[list[str]]:
 
         if response.get("scientific_name"):
             scientific_name = response.get("scientific_name")[0]
+        else:
+            scientific_name = None
 
         data.append([response.get("plant_id"), response.get(
             "name"), scientific_name, response.get("last_watered"), response.get("recording_taken"), response.get("soil_moisture"), response.get("temperature"), email, first_name, last_name, phone_number, image_url, longitude, latitude, town, country, country_abbreviation, continent])
-    return data
+
+    return make_dataframe(data)
 
 
 def get_image(response):
@@ -67,7 +69,17 @@ def make_dataframe(plants: list[list]) -> pd.DataFrame:
 
 
 if __name__ == "__main__":
-    plants = get_plant_data()
-    print(plants)
-    df = make_dataframe(plants)
+    plant_segments = [[num for num in range(0, 13
+                                            )], [num for num in range(13, 26
+                                                                      )], [num for num in range(26, 39
+                                                                                                )], [num for num in range(39, 50)]]
+
+    with Pool(processes=4) as pool:
+        dataframe_segments = pool.map(get_plant_data, plant_segments)
+        df = pd.DataFrame(columns=['plant_id', 'name', 'scientific_name', 'last_watered', 'recording_taken', 'soil_moisture', 'temperature', 'email',
+                                   'botanist_first_name', 'botanist_last_name', 'phone_number', 'image_url', 'longitude', 'latitude', 'town', 'country', 'country_abbreviation', 'continent'])
+
+        for dataframe_segment in dataframe_segments:
+            df = df._append(dataframe_segment, ignore_index=True)
+
     print(df)
