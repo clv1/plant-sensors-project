@@ -126,7 +126,6 @@ def transform_main(plant_data: list[list[dict]]) -> pd.DataFrame:
 
         clean_data_segments = pool.map(clean_data, data_segments)
         for dataframe_segment in clean_data_segments:
-            print(dataframe_segment)
             df = df._append(dataframe_segment, ignore_index=True)
 
     return df
@@ -136,4 +135,4 @@ if __name__ == "__main__":
     plant_data = extract_main()
     dataframe = transform_main(plant_data)
 
-    print(dataframe["soil_moisture"])
+    print(dataframe)
