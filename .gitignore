@@ -15,6 +15,7 @@ terraform.tfstate.backup
 *.json
 
 
+
 # misc
 .DS_Store
 __pytest_cache__
@@ -82,4 +83,5 @@ Temporary Items
 node_modules/
 /.pnp
 .pnp.js
+
 
