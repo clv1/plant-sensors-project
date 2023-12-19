@@ -8,6 +8,7 @@ DROP TABLE s_alpha.origin_location;
 GO
 
 
+
 CREATE TABLE s_alpha.origin_location (
     origin_location_id INT IDENTITY(1,1) NOT NULL,
     longitude FLOAT NOT NULL,
