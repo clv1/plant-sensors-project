@@ -1,5 +1,6 @@
-
-DROP TABLE IF EXISTS s_alpha.recording_event;
+USE plants;
+go
+DROP TABLE s_alpha.recording_event;
 
 
 CREATE TABLE s_alpha.recording_event (
