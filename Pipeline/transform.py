@@ -12,9 +12,11 @@ COLUMNS = ['plant_id', 'name', 'scientific_name', 'last_watered', 'recording_tak
 
 MIN_TEMP = 0
 MAX_TEMP = 25
+MIN_MOISTURE = 0
+MAX_MOISTURE = 100
 
 
-def get_plant_data(plant_data) -> list[list[str]]:
+def make_plant_dataframe(plant_data: list[dict]) -> list[list[str]]:
     """Gets plant data and collates it into a dataframe"""
     data = []
 
@@ -44,24 +46,31 @@ def get_plant_data(plant_data) -> list[list[str]]:
     return make_dataframe(data)
 
 
-def clean_data(df: pd.DataFrame) -> None:
+def clean_data(df: pd.DataFrame) -> pd.DataFrame:
     """Cleans invalid data from the dataframe"""
+    # Removes extreme temperature values from the dataframe
     remove_bad_temp = (pd.to_numeric(df.temperature) <= MIN_TEMP) | (
         pd.to_numeric(df.temperature) >= MAX_TEMP)
 
     df = df.drop(df[remove_bad_temp].index)
 
+    # Removes invalid soil_moisture values from the dataframe
+    remove_bad_moisture = (pd.to_numeric(df.soil_moisture) <= MIN_MOISTURE) | (
+        pd.to_numeric(df.soil_moisture) >= MAX_MOISTURE)
+
+    df = df.drop(df[remove_bad_moisture].index)
+
     return df
 
 
-def get_recording_taken(response: dict):
+def get_recording_taken(response: dict) -> datetime:
     """Converts recording_taken time to a datetime object"""
     recording_taken = response.get("recording_taken")
     return datetime.strptime(recording_taken,
                              '%Y-%m-%d %H:%M:%S')
 
 
-def get_last_watered(response: dict) -> str:
+def get_last_watered(response: dict) -> datetime:
     """Converts last_watered time to a datetime object"""
     last_watered = response.get("last_watered")
     return datetime.strptime(last_watered,
@@ -112,7 +121,7 @@ def make_dataframe(plants: list[list]) -> pd.DataFrame:
 def transform_main(plant_data: list[list[dict]]) -> pd.DataFrame:
     """Takes data segments and parallel processes them to create a single dataframe."""
     with Pool(processes=4) as pool:
-        data_segments = pool.map(get_plant_data, plant_data)
+        data_segments = pool.map(make_plant_dataframe, plant_data)
         df = pd.DataFrame(columns=COLUMNS)
 
         clean_data_segments = pool.map(clean_data, data_segments)
@@ -127,4 +136,4 @@ if __name__ == "__main__":
     plant_data = extract_main()
     dataframe = transform_main(plant_data)
 
-    print(dataframe)
+    print(dataframe["soil_moisture"])
