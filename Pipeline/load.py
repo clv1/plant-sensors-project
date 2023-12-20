@@ -8,15 +8,15 @@ import pyodbc
 from extract import extract_main
 from transform import transform_main
 
-CONN_STR = f'DRIVER={{ODBC Driver 17 for SQL Server}};SERVER={environ["DB_HOST"]};DATABASE={environ["DB_NAME"]};UID={environ["DB_USER"]};PWD={environ["DB_PASSWORD"]}'
 
 
 def get_connection() -> pyodbc.Connection | None:
     """Connects to the database"""
+    conn_str = f'DRIVER={{ODBC Driver 17 for SQL Server}};SERVER={environ["DB_HOST"]};DATABASE={environ["DB_NAME"]};UID={environ["DB_USER"]};PWD={environ["DB_PASSWORD"]}'
 
     # Establish a connection to the database
     try:
-        connection = pyodbc.connect(CONN_STR)
+        connection = pyodbc.connect(conn_str)
         print("Connected to the database successfully!")
         return connection
     except pyodbc.Error as e:
@@ -46,6 +46,16 @@ def upload_botanists(connection: pyodbc.Connection, dataframe: pd.DataFrame) -> 
                     VALUES 
                         (?, ?, ?, ?)
                     """
+    
+    botanist_query = """
+                    SELECT 
+                        first_name, last_name
+                    FROM
+                        s_alpha.botanist
+                    ;
+                    """
+    cursor = connection.cursor()
+    botanist_query_data = cursor.execute(botanist_query).fetchall()
 
     botanist_data = dataframe[["botanist_first_name",
                       "botanist_last_name", "email", "phone_number"]]
@@ -53,7 +63,13 @@ def upload_botanists(connection: pyodbc.Connection, dataframe: pd.DataFrame) -> 
     # Remove duplicates
     insert_data = list(set([i for i in botanist_tuples]))
 
-    bulk_insert(connection, insert_query, insert_data)
+    for index, botanist in enumerate(insert_data):
+        for query_botanist in botanist_query_data:
+            if botanist[0] == query_botanist[0] and botanist[1] == query_botanist[1]:
+                del insert_data[index]
+
+    if len(insert_data) > 0:
+       bulk_insert(connection, insert_query, insert_data)
 
 
 
