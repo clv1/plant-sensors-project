@@ -11,13 +11,7 @@ from transform import transform_main
 
 def get_connection():
     """Connects to the database"""
-    conn_str = f"""
-                DRIVER={{ODBC Driver 17 for SQL Server}};
-                SERVER={environ["DB_HOST"]};
-                DATABASE={environ["DB_NAME"]};
-                UID={environ["DB_USER"]};
-                PWD={environ["DB_PASSWORD"]}
-                """
+    conn_str = f'DRIVER={{ODBC Driver 17 for SQL Server}};SERVER={environ["DB_HOST"]};DATABASE={environ["DB_NAME"]};UID={environ["DB_USER"]};PWD={environ["DB_PASSWORD"]}'
     
     # Establish a connection to the database
     try:
@@ -43,7 +37,7 @@ def bulk_insert(connection, insert_query, insert_data):
 
 
 
-def upload_botanists(connection):
+def upload_botanists(connection, dataframe):
     """Uploads the botanist data to the botanist table"""
     insert_query = """
                     INSERT INTO s_alpha.botanist 
@@ -62,7 +56,7 @@ def upload_botanists(connection):
 
 
 
-def upload_origin_locations(connection):
+def upload_origin_locations(connection, dataframe):
     """Uploads the botanist data to the botanist table"""
     insert_query = """
                     INSERT INTO s_alpha.origin_location 
@@ -82,7 +76,7 @@ def upload_origin_locations(connection):
 
 
 
-def upload_plants(connection):
+def upload_plants(connection, dataframe):
     """Uploads the botanist data to the botanist table"""
     origin_location_ids_query = """
                                 SELECT 
@@ -110,22 +104,19 @@ def upload_plants(connection):
                 plant_tuples.append((row['name'], row["scientific_name"], location[0], row["image_url"]))
                 break
 
-    print(plant_tuples)
-
     bulk_insert(connection, insert_query,  plant_tuples)
 
 
-def upload_recording_events(connection):
+def upload_recording_events(connection, dataframe):
     botanist_query =  """
                     SELECT 
-                        botanist_id, botanist_first_name, botanist_last_name
+                        botanist_id, first_name, last_name
                     FROM 
                         s_alpha.botanist
                     ;
                     """
     cursor = connection.cursor()
     botanist_query_data = cursor.execute(botanist_query).fetchall()
-
 
     plant_query =  """
                     SELECT 
@@ -136,7 +127,6 @@ def upload_recording_events(connection):
                     """
     cursor = connection.cursor()
     plant_query_data = cursor.execute(plant_query).fetchall()
-
 
     insert_query = """
                     INSERT INTO s_alpha.recording_event 
@@ -158,22 +148,26 @@ def upload_recording_events(connection):
                 break
 
         recording_tuples.append((plant_id, botanist_id, row["soil_moisture"], row["temperature"], row["recording_taken"], row["last_watered"]))
-
     
+    bulk_insert(connection, insert_query, recording_tuples)
+    
+
+
+def load_main(df):
+    load_dotenv()
+    
+    conn = get_connection()
+
+    upload_botanists(conn, df)
+    upload_origin_locations(conn, df)
+    upload_plants(conn, df)
+    upload_recording_events(conn, df)
+
+    conn.close()
+
 
 if __name__ == "__main__":
     plant_data = extract_main()
-    dataframe = transform_main(plant_data)
+    df = transform_main(plant_data)
+    load_main(df)
 
-    load_dotenv()
-    
-
-    conn = get_connection()
-
-    # upload_botanists(conn)
-    # upload_origin_locations(conn)
-    # upload_plants(conn)
-    upload_recording_events(conn)
-
-
-    conn.close()
