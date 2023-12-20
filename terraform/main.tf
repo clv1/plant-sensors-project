@@ -113,6 +113,13 @@ resource "aws_iam_role" "iam_for_lambda_ps_tf" {
         ],
   })
 }
+#lambda function permission
+resource "aws_lambda_permission" "execute-lambda-permission" {
+    action = "lambda:InvokeFunction"
+    function_name = aws_lambda_function.c9-persnickety-lambda.function_name
+    principal = "events.amazonaws.com"
+    source_arn = aws_cloudwatch_event_rule.email-trigger.arn
+}
 
 resource "aws_lambda_function" "c9-persnickety-lambda" {
     function_name = "c9-persnickety-lambda"
@@ -131,6 +138,73 @@ resource "aws_lambda_function" "c9-persnickety-lambda" {
 
 }
 # Create the step-function
+#step function iam roles + associated step-function set up
+resource "aws_iam_policy" "step-function-policy" {
+    name = "ExecuteStepFunctions"
+    policy = jsonencode({
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Action": [
+                "states:StartExecution"
+            ],
+            "Resource": [
+                [aws_sfn_state_machine.c9-persnickety-stm-tf.arn]
+            ]
+        }
+    ]
+})
+}
 # step-function
-
+resource "aws_sfn_state_machine" "c9-persnickety-stm-tf" {
+  name     = "c9-persnickety-stm-tf"
+  role_arn = aws_lambda_function.c9-persnickety-lambda.role
+  definition = <<EOF
+{
+  "Comment": "StepFunction",
+  "StartAt": "InvokeLambda",
+  "States": {
+    "InvokeLambda": {
+      "Type": "Task",
+      "Resource": [add lambda arn],
+      "Next": "SendEmail"
+    },
+    "SendEmail": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::aws-sdk:ses:sendEmail",
+      "Parameters": {
+        "Source": "trainee.anurag.kaur@sigmalabs.co.uk",
+        "Message": {
+            "Subject": {
+              "Data": "Unhealthy Plant Alert"
+            },
+            "Body": {
+              "Html": {
+                "Data": "{$.message}"
+            }
+          }
+        },
+        "Destination": {
+          "ToAddresses": [
+            "trainee.anurag.kaur@sigmalabs.co.uk"
+          ]
+        }
+      },
+      "End": true
+    }
+  }
+}
+EOF
+}
 # Sets up the required EventBridge trigger
+resource "aws_cloudwatch_event_rule" "email-trigger" {
+  name                = "c9-persnickety-ses-tf"
+  schedule_expression = "cron(0/1 * * * ? *)"
+}
+
+resource "aws_cloudwatch_event_target" "email-target" {
+
+    rule = aws_cloudwatch_event_rule.email-trigger.name
+    arn = aws_lambda_function.c9-persnickety-lambda.arn
+}
