@@ -22,13 +22,25 @@ def get_connection():
         print("Error in connection: ", e)
 
 
-# def upload_botanists(conn, df: pd.Dataframe):
-    # query = sql.text(
-    #     "INSERT INTO s_alpha.botanist (first_name, last_name, email, phone_number) VALUES (:first_name, :last_name, :email, :phone_number)")
+def upload_botanists(conn):
+    """Uploads the botanist data to the botanist table"""
+    cursor = conn.cursor()
+    insert_query = 'INSERT INTO s_alpha.botanist (first_name, last_name, email, phone_number) VALUES (?, ?, ?, ?)'
 
-    # for botanist in df
-    # conn.execute(query, {"first_name": first_name, "last_name": last_name,
-    #              "email": email, "phone_number": phone_number})
+    botanist_data = dataframe[["botanist_first_name",
+                      "botanist_last_name", "email", "phone_number"]]
+    botanist_tuples = list(botanist_data.itertuples(index=False, name=None))
+
+    # Execute the insert query using executemany
+    try:
+        cursor.executemany(insert_query, botanist_tuples)
+        conn.commit() 
+        print('Bulk insert was successful.')
+    except pyodbc.Error as e:
+        print('Error during bulk insert:', e)
+
+    cursor.close()
+
 
 
 if __name__ == "__main__":
@@ -36,32 +48,12 @@ if __name__ == "__main__":
     dataframe = transform_main(plant_data)
 
     load_dotenv()
-    botanist_data = dataframe[["botanist_first_name",
-                      "botanist_last_name", "email", "phone_number"]]
+    
 
     conn = get_connection()
-    cursor = conn.cursor()
 
-    botanist_tuples = list(botanist_data.itertuples(index=False, name=None))
 
-    # Define your insert query
-    insert_query = 'INSERT INTO YourTableName (Column1, Column2, Column3) VALUES (?, ?, ?)'
 
-    # Define the data you want to insert
-    data_to_insert = [
-        ('value1_row1', 'value2_row1', 'value3_row1'),
-        ('value1_row2', 'value2_row2', 'value3_row2'),
-        # Add as many rows as you need
-    ]
 
-    # Execute the insert query using executemany
-    try:
-        cursor.executemany(insert_query, data_to_insert)
-        conn.commit()  # Don't forget to commit to save changes
-        print('Bulk insert was successful.')
-    except pyodbc.Error as e:
-        print('Error during bulk insert:', e)
 
-    # Clean up
-    cursor.close()
     conn.close()
