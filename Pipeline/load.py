@@ -116,7 +116,28 @@ def upload_plants(connection):
 
 
 def upload_recording_events(connection):
-    
+    botanist_query =  """
+                    SELECT 
+                        botanist_id, botanist_first_name, botanist_last_name
+                    FROM 
+                        s_alpha.botanist
+                    ;
+                    """
+    cursor = connection.cursor()
+    botanist_query_data = cursor.execute(botanist_query).fetchall()
+
+
+    plant_query =  """
+                    SELECT 
+                        plant_id, name
+                    FROM 
+                        s_alpha.plant
+                    ;
+                    """
+    cursor = connection.cursor()
+    plant_query_data = cursor.execute(plant_query).fetchall()
+
+
     insert_query = """
                     INSERT INTO s_alpha.recording_event 
                         (plant_id, botanist_id, soil_moisture, temperature, recording_taken, last_watered) 
@@ -126,8 +147,19 @@ def upload_recording_events(connection):
 
     recording_tuples = []
     for index, row in dataframe[["name", "botanist_first_name", "botanist_last_name", "soil_moisture", "temperature", "recording_taken", "last_watered"]].iterrows():
-        print(row)
+        for plant in plant_query_data:
+            if row["name"] == plant[1]:
+                plant_id = plant[0]
+                break
 
+        for botanist in botanist_query_data:
+            if row["botanist_first_name"] == botanist[1] and row["botanist_last_name"] == botanist[2]:
+                botanist_id = botanist[0]
+                break
+
+        recording_tuples.append((plant_id, botanist_id, row["soil_moisture"], row["temperature"], row["recording_taken"], row["last_watered"]))
+
+    
 
 if __name__ == "__main__":
     plant_data = extract_main()
