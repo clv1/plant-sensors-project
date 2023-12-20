@@ -13,16 +13,18 @@ TEMP_RANGE_CONTINENT = {'America': [20, 35], 'Africa': [
     25, 35], 'Asia': [25, 35], 'Europe': [9, 25], 'Pacific': [25, 35]}
 MOISTURE_LIMIT = [5, 60]
 
+# --- PREVIOUS IDEA
 # generate a baseline average temp and moisture data from
 # (previously extracted from a bunch of database readings)
 # set a range of +-10 (%)
 # what happens to moisture when plant is watered - does it shoot up
 # do some background research/visualisation to see existing patterns?
 
+# --- CURRENT PLAN FOR HEALTH CHECK
 # extract past 2-3 readings -> get average
 # threshold = avg
 # if temp is += 3˚C
-# moisture should not be below -> 0%-5%
+# moisture should not be below -> 0%-5% or >60% (temporary parameters that can be easily adjusted after seeing more data)
 
 
 client = boto3.client('ses', region_name='eu-west-2')
