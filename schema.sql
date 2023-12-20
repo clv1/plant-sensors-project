@@ -1,10 +1,11 @@
 USE plants;
 GO
 
-DROP TABLE s_alpha.plant;
-DROP TABLE s_alpha.recording_event;
-DROP TABLE s_alpha.botanist;
-DROP TABLE s_alpha.origin_location;
+
+DROP TABLE IF EXISTS s_alpha.recording_event;
+DROP TABLE IF EXISTS s_alpha.plant;
+DROP TABLE IF EXISTS s_alpha.botanist;
+DROP TABLE IF EXISTS s_alpha.origin_location;
 GO
 
 
