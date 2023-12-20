@@ -9,7 +9,6 @@ from extract import extract_main
 from transform import transform_main
 
 
-
 def get_connection() -> pyodbc.Connection | None:
     """Connects to the database"""
     conn_str = f'DRIVER={{ODBC Driver 17 for SQL Server}};SERVER={environ["DB_HOST"]};DATABASE={environ["DB_NAME"]};UID={environ["DB_USER"]};PWD={environ["DB_PASSWORD"]}'
@@ -37,7 +36,6 @@ def bulk_insert(connection: pyodbc.Connection, insert_query: str, insert_data: l
     cursor.close()
 
 
-
 def upload_botanists(connection: pyodbc.Connection, dataframe: pd.DataFrame) -> None:
     """Uploads the botanist data to the botanist table"""
     insert_query = """
@@ -46,7 +44,7 @@ def upload_botanists(connection: pyodbc.Connection, dataframe: pd.DataFrame) -> 
                     VALUES 
                         (?, ?, ?, ?)
                     """
-    
+
     botanist_query = """
                     SELECT 
                         first_name, last_name
@@ -58,7 +56,7 @@ def upload_botanists(connection: pyodbc.Connection, dataframe: pd.DataFrame) -> 
     botanist_query_data = cursor.execute(botanist_query).fetchall()
 
     botanist_data = dataframe[["botanist_first_name",
-                      "botanist_last_name", "email", "phone_number"]]
+                               "botanist_last_name", "email", "phone_number"]]
     botanist_tuples = list(botanist_data.itertuples(index=False, name=None))
     # Remove duplicates
     insert_data = list(set([i for i in botanist_tuples]))
@@ -69,8 +67,7 @@ def upload_botanists(connection: pyodbc.Connection, dataframe: pd.DataFrame) -> 
                 del insert_data[index]
 
     if len(insert_data) > 0:
-       bulk_insert(connection, insert_query, insert_data)
-
+        bulk_insert(connection, insert_query, insert_data)
 
 
 def upload_origin_locations(connection: pyodbc.Connection, dataframe: pd.DataFrame) -> None:
@@ -82,15 +79,30 @@ def upload_origin_locations(connection: pyodbc.Connection, dataframe: pd.DataFra
                         (?, ?, ?, ?, ?, ?)
                     """
 
+    location_query = """
+                    SELECT 
+                        longitude, latitude
+                    FROM
+                        s_alpha.origin_location
+                    ;
+                    """
+    cursor = connection.cursor()
+    location_query_data = cursor.execute(location_query).fetchall()
+
     location_data = dataframe[["longitude",
-                      "latitude", "town", "country", "country_abbreviation", "continent"]]
+                               "latitude", "town", "country", "country_abbreviation", "continent"]]
     location_tuples = list(location_data.itertuples(index=False, name=None))
 
     # Remove duplicates
     insert_data = list(set([i for i in location_tuples]))
 
-    bulk_insert(connection, insert_query, insert_data)
+    for location in insert_data:
+        for query_location in location_query_data:
+            if float(location[0]) == float(query_location[0]) and float(location[1]) == float(query_location[1]):
+                insert_data.pop(insert_data.index(location))
+                break
 
+    bulk_insert(connection, insert_query, insert_data)
 
 
 def upload_plants(connection: pyodbc.Connection, dataframe: pd.DataFrame) -> None:
@@ -114,10 +126,10 @@ def upload_plants(connection: pyodbc.Connection, dataframe: pd.DataFrame) -> Non
 
     plant_tuples = []
     for index, row in dataframe[["name", "longitude",
-                                  "latitude", "scientific_name", "image_url"]].iterrows():
+                                 "latitude", "scientific_name", "image_url"]].iterrows():
         for location in location_query_data:
             if float(row["longitude"]) == float(location[1]) and float(
-                row["latitude"]) == float(location[2]):
+                    row["latitude"]) == float(location[2]):
                 plant_tuples.append(
                     (row['name'], row["scientific_name"], location[0], row["image_url"]))
                 break
@@ -126,8 +138,8 @@ def upload_plants(connection: pyodbc.Connection, dataframe: pd.DataFrame) -> Non
 
 
 def upload_recording_events(connection: pyodbc.Connection, dataframe: pd.DataFrame) -> None:
-    """Uploads the recording event data to the recording event table"""   
-    botanist_query =  """
+    """Uploads the recording event data to the recording event table"""
+    botanist_query = """
                     SELECT 
                         botanist_id, first_name, last_name
                     FROM 
@@ -137,7 +149,7 @@ def upload_recording_events(connection: pyodbc.Connection, dataframe: pd.DataFra
     cursor = connection.cursor()
     botanist_query_data = cursor.execute(botanist_query).fetchall()
 
-    plant_query =  """
+    plant_query = """
                     SELECT 
                         plant_id, name
                     FROM 
@@ -156,7 +168,7 @@ def upload_recording_events(connection: pyodbc.Connection, dataframe: pd.DataFra
 
     recording_tuples = []
     for index, row in dataframe[["name", "botanist_first_name", "botanist_last_name", "soil_moisture",
-                                  "temperature", "recording_taken", "last_watered"]].iterrows():
+                                 "temperature", "recording_taken", "last_watered"]].iterrows():
         for plant in plant_query_data:
             if row["name"] == plant[1]:
                 plant_id = plant[0]
@@ -164,15 +176,14 @@ def upload_recording_events(connection: pyodbc.Connection, dataframe: pd.DataFra
 
         for botanist in botanist_query_data:
             if row["botanist_first_name"] == botanist[1] and row[
-                "botanist_last_name"] == botanist[2]:
+                    "botanist_last_name"] == botanist[2]:
                 botanist_id = botanist[0]
                 break
 
         recording_tuples.append((plant_id, botanist_id, row["soil_moisture"],
-                                  row["temperature"], row["recording_taken"], row["last_watered"]))
+                                 row["temperature"], row["recording_taken"], row["last_watered"]))
 
     bulk_insert(connection, insert_query, recording_tuples)
-
 
 
 def load_main(df: pd.DataFrame) -> None:
@@ -181,10 +192,10 @@ def load_main(df: pd.DataFrame) -> None:
 
     conn = get_connection()
 
-    upload_botanists(conn, df)
+    # upload_botanists(conn, df)
     upload_origin_locations(conn, df)
-    upload_plants(conn, df)
-    upload_recording_events(conn, df)
+    # upload_plants(conn, df)
+    # upload_recording_events(conn, df)
 
     conn.close()
 
