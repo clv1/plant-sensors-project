@@ -121,10 +121,10 @@ def generate_html_string(plants:list[dict]) -> str:
     return warning_string 
 
 
-# def handler(event=check_plant_vitals(df), context=None): 
-#     if event:
-#         return send_email(event)
-#     return None
+def handler(event=check_plant_vitals(df), context=None): 
+    if event:
+        return send_email(event)
+    return None
 
 
 if __name__ == "__main__":

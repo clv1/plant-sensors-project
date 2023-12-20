@@ -159,52 +159,60 @@ resource "aws_iam_policy" "step-function-policy" {
 # step-function
 resource "aws_sfn_state_machine" "c9-persnickety-stm-tf" {
   name     = "c9-persnickety-stm-tf"
-  role_arn = aws_lambda_function.c9-persnickety-lambda.role
+  role_arn = aws_iam_policy.step-function-policy.arn
   definition = <<EOF
 {
-  "Comment": "StepFunction",
-  "StartAt": "InvokeLambda",
+  "Comment": "A description of my state machine",
+  "StartAt": "ECS RunTask",
   "States": {
-    "InvokeLambda": {
+    "ECS RunTask": {
       "Type": "Task",
-      "Resource": [add lambda arn],
-      "Next": "SendEmail"
-    },
-    "SendEmail": {
-      "Type": "Task",
-      "Resource": "arn:aws:states:::aws-sdk:ses:sendEmail",
+      "Resource": "arn:aws:states:::ecs:runTask.sync",
       "Parameters": {
-        "Source": "trainee.anurag.kaur@sigmalabs.co.uk",
-        "Message": {
-            "Subject": {
-              "Data": "Unhealthy Plant Alert"
-            },
-            "Body": {
-              "Html": {
-                "Data": "{$.message}"
-            }
-          }
-        },
-        "Destination": {
-          "ToAddresses": [
-            "trainee.anurag.kaur@sigmalabs.co.uk"
-          ]
-        }
+        "LaunchType": "FARGATE",
+        "Cluster": "arn:aws:ecs:eu-west-2:129033205317:cluster/c9-ecs-cluster",
+        "TaskDefinition": "arn:aws:ecs:REGION:ACCOUNT_ID:task-definition/MyTaskDefinition:1"
       },
+      "Next": "Lambda Invoke"
+    },
+    "Lambda Invoke": {
+      "Type": "Task",
+      "Resource": "arn:aws:lambda:eu-west-2:129033205317:function:c9-persnickety-lambda",
+      "OutputPath": "$.Payload",
+      "Parameters": {
+        "Payload.$": "$"
+      },
+      "Retry": [
+        {
+          "ErrorEquals": [
+            "Lambda.ServiceException",
+            "Lambda.AWSLambdaException",
+            "Lambda.SdkClientException",
+            "Lambda.TooManyRequestsException"
+          ],
+          "IntervalSeconds": 1,
+          "MaxAttempts": 3,
+          "BackoffRate": 2
+        }
+      ],
       "End": true
     }
   }
 }
 EOF
 }
+
 # Sets up the required EventBridge trigger
-resource "aws_cloudwatch_event_rule" "email-trigger" {
-  name                = "c9-persnickety-ses-tf"
+#eventbridge aws iam role
+
+
+resource "aws_cloudwatch_event_rule" "sfn-trigger" {
+  name                = "c9-persnickety-sfn-trigger-tf"
   schedule_expression = "cron(0/1 * * * ? *)"
 }
 
 resource "aws_cloudwatch_event_target" "email-target" {
 
-    rule = aws_cloudwatch_event_rule.email-trigger.name
-    arn = aws_lambda_function.c9-persnickety-lambda.arn
+    rule = aws_cloudwatch_event_rule.sfn-trigger.name
+    arn = aws_sfn_state_machine.c9-persnickety-stm-tf.arn
 }
