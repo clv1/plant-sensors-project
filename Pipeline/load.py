@@ -8,14 +8,15 @@ import pyodbc
 from extract import extract_main
 from transform import transform_main
 
+CONN_STR = f'DRIVER={{ODBC Driver 17 for SQL Server}};SERVER={environ["DB_HOST"]};DATABASE={environ["DB_NAME"]};UID={environ["DB_USER"]};PWD={environ["DB_PASSWORD"]}'
+
 
 def get_connection() -> pyodbc.Connection | None:
     """Connects to the database"""
-    conn_str = f'DRIVER={{ODBC Driver 17 for SQL Server}};SERVER={environ["DB_HOST"]};DATABASE={environ["DB_NAME"]};UID={environ["DB_USER"]};PWD={environ["DB_PASSWORD"]}'
 
     # Establish a connection to the database
     try:
-        connection = pyodbc.connect(conn_str)
+        connection = pyodbc.connect(CONN_STR)
         print("Connected to the database successfully!")
         return connection
     except pyodbc.Error as e:
