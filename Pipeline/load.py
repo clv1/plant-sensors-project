@@ -96,7 +96,6 @@ def upload_plants(connection):
 
     # location_query_data = [(1, -19.32556, -41.25528), (2, 33.95015, -118.03917), (3, 7.65649, 4.92235), (4, -19.32556, -41.25528), (5, 13.70167, -89.10944), (6, 22.88783, 84.13864), (7, 43.86682, -79.2663), (8, 5.27247, -3.59625), (9, 50.9803, 11.32903), (10, 43.50891, 16.43915), (11, 20.88953, -156.47432), (12, 32.5007, -94.74049), (13, 49.68369, 8.61839), (14, 29.65163, -82.32483), (15, 36.08497, 9.37082), (16, -7.51611, 109.05389), (17, 51.30001, 13.10984), (18, -21.44236, 27.46153), (19, 41.15612, 1.10687), (20, -29.2975, -51.50361), (21, 48.35693, 10.98461), (22, 52.53048, 13.29371), (23, 43.82634, 144.09638), (24, 11.8659, 34.3869), (25, 36.06386, 4.62744), (26, 51.67822, 33.9162), (27, 43.91452, -69.96533), (28, 34.75856, 136.13108), (29, 30.75545, 20.22625), (30, 23.29549, 113.82465), (31, 52.47774, 10.5511), (32, 28.92694, 78.23456), (33, 41.15612, 1.10687), (34, -32.45242, -71.23106), (35, 30.21121, 74.4818), (36, -6.8, 39.25), (37, 36.24624, 139.07204), (38, 44.92801, 4.8951), (39, 22.4711, 88.1453), (40, 41.57439, 24.71204), (41, 20.22816, -103.5687), (42, 33.95015, -118.03917), (43, -13.7804, 34.4587), (44, 14.14989, 121.3152), (45, 17.94979, -94.91386)]
 
-
     insert_query = """
                     INSERT INTO s_alpha.plant 
                         (name, scientific_name, origin_location_id, image_url) 
@@ -109,6 +108,7 @@ def upload_plants(connection):
         for location in location_query_data:
             if float(row["longitude"]) == float(location[1]) and float(row["latitude"]) == float(location[2]):
                 plant_tuples.append((row['name'], row["scientific_name"], location[0], row["image_url"]))
+                break
 
     print(plant_tuples)
 
@@ -116,7 +116,17 @@ def upload_plants(connection):
 
 
 def upload_recording_events(connection):
-    pass
+    
+    insert_query = """
+                    INSERT INTO s_alpha.recording_event 
+                        (plant_id, botanist_id, soil_moisture, temperature, recording_taken, last_watered) 
+                    VALUES 
+                        (?, ?, ?, ?, ?, ?)
+                    """
+
+    recording_tuples = []
+    for index, row in dataframe[["name", "botanist_first_name", "botanist_last_name", "soil_moisture", "temperature", "recording_taken", "last_watered"]].iterrows():
+        print(row)
 
 
 if __name__ == "__main__":
@@ -131,6 +141,7 @@ if __name__ == "__main__":
     # upload_botanists(conn)
     # upload_origin_locations(conn)
     # upload_plants(conn)
+    upload_recording_events(conn)
 
 
     conn.close()
