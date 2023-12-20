@@ -20,22 +20,17 @@ def test_get_plants_data_not_a_list():
 def test_get_plants_data_not_a_list_of_ints():
     """Tests that checks raises an error if plant range is not a list of ints"""
 
-    plant_range = ['1', '2', '3', '4']
+    plant_range_all_strings = ['1', '2', '3', '4']
+    plant_range_one_string = [1, 2, 3, '4']
 
     with pytest.raises(TypeError):
-        get_plant_data(plant_range)
-
-
-def test_get_plants_data_not_one_value_not_an_int():
-    """Tests that checks raises an error if plant range is not a list of ints"""
-
-    plant_range = [1, 2, 3, '4']
+        get_plant_data(plant_range_all_strings)
 
     with pytest.raises(TypeError):
-        get_plant_data(plant_range)
+        get_plant_data(plant_range_one_string)
 
 
-def test_get_plants_data(requests_mock):
+def test_get_plants_data_success(requests_mock):
     """Test that checks get plant data is working"""
 
     plant_range = [1, 2, 3, 4, 5]
