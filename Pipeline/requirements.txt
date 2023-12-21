@@ -5,4 +5,4 @@ requests
 --no-binary :all: pyodbc 
 pytest
 requests-mock
-
+pytest-cov

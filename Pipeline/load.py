@@ -62,11 +62,11 @@ def upload_botanists(connection: pyodbc.Connection, dataframe: pd.DataFrame) -> 
     botanist_tuples = list(botanist_data.itertuples(index=False, name=None))
     # Remove duplicates
     insert_data = list(set([i for i in botanist_tuples]))
-
     for botanist in insert_data:
         for query_botanist in botanist_query_data:
             if botanist[0] == query_botanist[0] and botanist[1] == query_botanist[1]:
                 insert_data.pop(insert_data.index(botanist))
+                break
 
     if len(insert_data) > 0:
         bulk_insert(connection, insert_query, insert_data)
