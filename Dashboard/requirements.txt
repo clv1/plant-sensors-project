@@ -1,0 +1,4 @@
+python-dotenv
+pandas
+pyodbc
+--no-binary :all: pyodbc 
