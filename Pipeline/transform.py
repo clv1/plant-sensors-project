@@ -134,5 +134,5 @@ def transform_main(plant_data: list[list[dict]]) -> pd.DataFrame:
 if __name__ == "__main__":
     plant_data = extract_main()
     dataframe = transform_main(plant_data)
-
-    print(dataframe)
+    print(plant_data)
+    # print(dataframe)
