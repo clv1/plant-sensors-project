@@ -12,7 +12,7 @@ LAST_24_LIMIT = (datetime.now() - timedelta(hours=24)
                  ).strftime("%Y-%m-%d %H:%M:%S")
 
 
-def get_db_connection():
+def get_db_connection() -> pyodbc.Connection:
     """Connects to the database."""
     load_dotenv()
     conn_str = f"""DRIVER={{ODBC Driver 17 for SQL Server}};
