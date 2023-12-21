@@ -2,7 +2,6 @@ python-dotenv
 sqlalchemy
 pandas
 requests
---no-binary :all: pyodbc 
 pytest
 requests-mock
 
