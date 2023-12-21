@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 import streamlit as st
 import altair as alt
 import pandas as pd
-from dashboard_functions import get_db_connection, load_all_data, load_last_24_data, get_unique_plant_ids, make_temperature_graph, make_moisture_graph, make_country_pie_chart, get_botanists_and_plants, make_watered_by_hour_chart
+from dashboard_functions import get_db_connection, load_all_data, load_last_24_data, get_unique_plant_ids, make_temperature_graph, make_moisture_graph, make_country_pie_chart, get_botanists_and_plants, make_watered_per_day_chart, make_watered_per_hour_chart
 
 if __name__ == "__main__":
 
@@ -71,29 +71,21 @@ if __name__ == "__main__":
             plants_data_24, plant_id), use_container_width=True)
 
     # LAST WATERED
+
     col1, col2 = st.columns(2)
 
     with col1:
-        st.subheader("How many plants are being watered each hour?")
+        st.subheader("How many plants are being watered each day?")
 
-        if add_selectbox == "All data":
-            st.altair_chart(make_watered_by_hour_chart(plants_data))
+        st.altair_chart(make_watered_per_day_chart(plants_data))
 
-        if add_selectbox == "Last 24 Hours":
-            st.altair_chart(make_watered_by_hour_chart(plants_data_24))
+    with col2:
+        st.subheader(
+            "How many have been watered per hour in the last 24 hours?")
+
+        st.altair_chart(make_watered_per_hour_chart(plants_data_24))
 
     # COUNTRIES AND PLANTS
 
     st.subheader('The Diveristy of the plants based on Country')
     st.altair_chart(make_country_pie_chart(plants_data))
-
-    # PLANT IMAGES
-
-    for index, row in get_unique_plant_ids(plants_data).iterrows():
-        st.subheader(f"Plant ID: {row['plant_id']}, Name: {row['name']}")
-        col1, col2 = st.columns(2)
-
-        with col1:
-            if row['image_url']:
-                st.image(row['image_url'], caption=row['name'],
-                         use_column_width=True)

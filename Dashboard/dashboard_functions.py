@@ -129,12 +129,24 @@ def make_country_pie_chart(plants_data: pd.DataFrame) -> alt.Chart:
     return plant_country_chart
 
 
-def make_watered_by_hour_chart(plants_data: pd.DataFrame) -> alt.Chart:
-    """Makes a bar chart that shows how many plants are being watered each hour"""
+def make_watered_per_day_chart(plants_data: pd.DataFrame) -> alt.Chart:
+    """Makes a bar chart that shows how many plants are being watered each day"""
+
+    plants_data['date'] = plants_data['last_watered'].dt.date
+    chart = alt.Chart(plants_data).mark_bar().encode(
+        x=alt.X('date:O', title='date'),
+        y=alt.Y('count():Q', title='Number of plants watered')
+    )
+
+    return chart
+
+
+def make_watered_per_hour_chart(plants_data: pd.DataFrame) -> alt.Chart:
+    """Makes a bar chart that shows how many plants are being watered each day"""
 
     plants_data['Hour'] = plants_data['last_watered'].dt.hour
     chart = alt.Chart(plants_data).mark_bar().encode(
-        x=alt.X('Hour:O', title='Hour of the Day'),
+        x=alt.X('Hour:O', title='Hour'),
         y=alt.Y('count():Q', title='Number of plants watered')
     )
 
