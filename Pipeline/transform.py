@@ -11,7 +11,7 @@ COLUMNS = ['plant_id', 'name', 'scientific_name', 'last_watered', 'recording_tak
            'latitude', 'town', 'country', 'country_abbreviation', 'continent']
 
 MIN_TEMP = 0
-MAX_TEMP = 25
+MAX_TEMP = 30
 MIN_MOISTURE = 0
 MAX_MOISTURE = 100
 
@@ -134,5 +134,4 @@ def transform_main(plant_data: list[list[dict]]) -> pd.DataFrame:
 if __name__ == "__main__":
     plant_data = extract_main()
     dataframe = transform_main(plant_data)
-    print(plant_data)
-    # print(dataframe)
+    print(dataframe)
