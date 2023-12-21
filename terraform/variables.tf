@@ -1,24 +1,24 @@
-variable "DATABASE" {
+variable "DB_NAME" {
     type = string
 }
 
-variable "DATABASE_USERNAME" {
+variable "DB_USER" {
     type = string
 }
 
-variable "DATABASE_HOST" {
+variable "DB_HOST" {
     type = string
 }
 
-variable "DATABASE_PASSWORD" {
+variable "DB_PASSWORD" {
     type = string
 }
 
-variable "DATABASE_PORT" {
+variable "DB_PORT" {
     type = string
 }
 
-variable "DATABASE_SCHEMA" {
+variable "DB_SCHEMA" {
     type = string
 }
 

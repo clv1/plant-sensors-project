@@ -18,6 +18,10 @@ MAX_MOISTURE = 100
 
 def make_plant_dataframe(plant_data: list[dict]) -> list[list[str]]:
     """Gets plant data and collates it into a dataframe"""
+
+    if not isinstance(plant_data, list):
+        raise TypeError('Plant data must be a list of dictionaries')
+
     data = []
 
     for plant in plant_data:
@@ -132,7 +136,7 @@ def transform_main(plant_data: list[list[dict]]) -> pd.DataFrame:
 
 
 if __name__ == "__main__":
-    plant_data = extract_main()
-    dataframe = transform_main(plant_data)
+    plant_data_ = extract_main()
+    dataframe = transform_main(plant_data_)
 
-    print(dataframe)
+    dataframe.to_csv("example_dataset_6.csv", index=False)

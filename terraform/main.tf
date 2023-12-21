@@ -87,7 +87,7 @@ resource "aws_ecs_task_definition" "task-dash" {
 resource "aws_ecs_service" "dashboard-service" {
     name = "c9-persnickety-dashboard-service"
     cluster = data.aws_ecs_cluster.c9-cluster.id
-    task_definition = "arn:aws:ecs:eu-west-2:129033205317:c9-persnickety-dashboard-td-tf:latest" 
+    task_definition = "arn:aws:ecs:eu-west-2:129033205317:c9-persnickety-dashboard-td-tf:latest"
     desired_count = 1
     launch_type = "FARGATE"
     network_configuration {
@@ -109,7 +109,7 @@ resource "aws_iam_role" "iam_for_lambda_ps_tf" {
                     Service: "lambda.amazonaws.com"
                 },
                 Action: "sts:AssumeRole",
-            }, 
+            },
         ],
   })
 }
@@ -128,11 +128,11 @@ resource "aws_lambda_function" "c9-persnickety-lambda" {
     package_type = "Image"
     environment {
       variables = {
-      DATABASE=var.DATABASE
-      HOST=var.DATABASE_HOST
-      PASSWORD=var.DATABASE_PASSWORD
-      PORT=var.DATABASE_PORT
-      USERNAME=var.DATABASE_USERNAME
+      DATABASE=var.DB_NAME
+      HOST=var.DB_HOST
+      PASSWORD=var.DB_PASSWORD
+      PORT=var.DB_PORT
+      USERNAME=var.DB_USER
     }
     }
 

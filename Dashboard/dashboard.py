@@ -42,11 +42,7 @@ selected_plants_by_day = st.sidebar.multiselect(
     options=plants_data['recording_taken'].dt.date.unique()
 )
 
-filter_by_plant_id = plants_data[(
-    plants_data['plant_id'].isin(selected_plants_by_ID))]
-filter_by_plant_name = plants_data[(
-    plants_data['plant_id'].isin(selected_plants_by_ID))]
-filter_by_day = plants_data[(
+filtered_by_plant_id = plants_data[(
     plants_data['plant_id'].isin(selected_plants_by_ID))]
 
 # ---OVERVIEW-----
@@ -57,7 +53,7 @@ st.metric("Total Number of Plants", num_of_plants)
 # TEMPERATURE AND MOISTURE OF THE PLANTS AS TIME HAS GONE
 
 
-temperature_per_reading_graph = alt.Chart(filter_by_plant_id).mark_line().encode(
+temperature_per_reading_graph = alt.Chart(filtered_by_plant_id).mark_line().encode(
     x='recording_taken:T',
     y='temperature:Q',
     color='name:N'
