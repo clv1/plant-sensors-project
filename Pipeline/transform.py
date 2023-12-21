@@ -1,6 +1,7 @@
 """Contains functions that collate and clean data extracted into a pandas dataframe."""
 
 from datetime import datetime
+import logging
 from multiprocessing import Pool
 import pandas as pd
 from extract import extract_main
@@ -32,6 +33,9 @@ def make_plant_dataframe(plant_data: list[dict]) -> list[list[str]]:
         # gets location details
         longitude, latitude, town, country, country_abbreviation, continent = get_location(
             plant)
+
+        if None in (first_name, last_name, email, phone_number, longitude, latitude, town, country, country_abbreviation, continent):
+            continue
 
         scientific_name = get_scientific_name(plant)
 
@@ -121,13 +125,16 @@ def make_dataframe(plants: list[list]) -> pd.DataFrame:
 def transform_main(plant_data: list[list[dict]]) -> pd.DataFrame:
     """Takes data segments and parallel processes them to create a single dataframe."""
     with Pool(processes=4) as pool:
+        logging.info("Transforming started.")
         data_segments = pool.map(make_plant_dataframe, plant_data)
         df = pd.DataFrame(columns=COLUMNS)
 
+        logging.info("Cleaning Started")
         clean_data_segments = pool.map(clean_data, data_segments)
         for dataframe_segment in clean_data_segments:
             df = df._append(dataframe_segment, ignore_index=True)
 
+    logging.info("Dataframe created and cleaned.")
     return df
 
 
