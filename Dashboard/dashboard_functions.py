@@ -70,22 +70,26 @@ def get_unique_plant_ids(plants_data: pd.DataFrame) -> pd.DataFrame:
     return unique_sorted_by_plant_id
 
 
-def get_unique_botanists(plants_data: pd.DataFrame) -> pd.DataFrame:
-    """Returns a dataframe of all the unique botanists"""
+def get_botanists_and_plants(plants_data: pd.DataFrame) -> pd.DataFrame:
+    """Returns a dataframe of all the botanists and the plants they work on"""
 
     plants_data['botanist_name'] = plants_data['first_name'] + \
         ' ' + plants_data['last_name']
 
-    sorted_by_botanists = plants_data.drop_duplicates(
-        subset='botanist_name')
+    botanists_and_plants = plants_data.drop_duplicates(
+        subset=['botanist_name', 'plant_id'])
 
-    return sorted_by_botanists
+    botanists_and_plants = botanists_and_plants.groupby(
+        'botanist_name')['plant_id'].agg(list).reset_index()
+    botanists_and_plants.columns = ['botanist', 'plants_worked_with']
+
+    return botanists_and_plants
 
 
-def make_temperature_against_recording_graph(plants_data: pd.DataFrame, column_name: str, filter: list) -> alt.Chart:
-    """Makes a chart that plots the temperature against the recording for each plant"""
+def make_temperature_graph(plants_data: pd.DataFrame, selected: list) -> alt.Chart:
+    """Makes a line chart that plots the temperature against the recording for each plant"""
 
-    plants_data = plants_data[(plants_data[column_name].isin(filter))]
+    plants_data = plants_data[(plants_data['plant_id'].isin(selected))]
 
     temperature_per_reading_graph = alt.Chart(plants_data).mark_line().encode(
         x='recording_taken:T',
@@ -96,10 +100,10 @@ def make_temperature_against_recording_graph(plants_data: pd.DataFrame, column_n
     return temperature_per_reading_graph
 
 
-def make_moisture_against_recording_graph(plants_data: pd.DataFrame, column_name: str, filter: list) -> alt.Chart:
-    """Makes a chart that plots the moisture against the recording for each plant"""
+def make_moisture_graph(plants_data: pd.DataFrame, selected: list) -> alt.Chart:
+    """Makes a line chart that plots the moisture against the recording for each plant"""
 
-    plants_data = plants_data[(plants_data[column_name].isin(filter))]
+    plants_data = plants_data[(plants_data['plant_id'].isin(selected))]
 
     moisture_graph = alt.Chart(plants_data).mark_line().encode(
         x='recording_taken:T',
@@ -111,7 +115,8 @@ def make_moisture_against_recording_graph(plants_data: pd.DataFrame, column_name
 
 
 def make_country_pie_chart(plants_data: pd.DataFrame) -> alt.Chart:
-    """Makes a pie chart that shows all the different countries the LMNH plants come from and how many of them come from their"""
+    """Makes a pie chart that shows all the different countries
+    the LMNH plants come from and how many of them come from their"""
 
     unique_plants = plants_data.drop_duplicates(subset='plant_id')
     country_counts = unique_plants['country'].value_counts().reset_index()
@@ -122,6 +127,18 @@ def make_country_pie_chart(plants_data: pd.DataFrame) -> alt.Chart:
     )
 
     return plant_country_chart
+
+
+def make_watered_by_hour_chart(plants_data: pd.DataFrame) -> alt.Chart:
+    """Makes a bar chart that shows how many plants are being watered each hour"""
+
+    plants_data['Hour'] = plants_data['last_watered'].dt.hour
+    chart = alt.Chart(plants_data).mark_bar().encode(
+        x=alt.X('Hour:O', title='Hour of the Day'),
+        y=alt.Y('count():Q', title='Number of plants watered')
+    )
+
+    return chart
 
 
 if __name__ == "__main__":
