@@ -1,4 +1,4 @@
-"""Small example of connecting to an MSSQL database."""
+"""Contains functions that upload clean data to all tables in the database."""
 from os import environ
 from dotenv import load_dotenv
 import pandas as pd
