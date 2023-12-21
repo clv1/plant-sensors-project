@@ -1,0 +1,6 @@
+--no-binary :all: pyodbc
+python-dotenv
+altair
+streamlit
+pandas
+ipykernel
