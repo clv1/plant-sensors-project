@@ -1,4 +1,5 @@
 """Contains functions that upload clean data to all tables in the database."""
+import logging
 from os import environ
 from dotenv import load_dotenv
 import pandas as pd
@@ -224,12 +225,21 @@ def load_main(df: pd.DataFrame) -> None:
     """loads all data from the dataframe into its respective tables"""
     load_dotenv()
 
+    logging.info("Getting Database Connection.")
     conn = get_connection()
+    logging.info("Connected to the Database.")
 
     upload_botanists(conn, df)
+    logging.info("Botanist data uploaded.")
+
     upload_origin_locations(conn, df)
+    logging.info("Location data uploaded.")
+
     upload_plants(conn, df)
+    logging.info("Plant data uploaded.")
+
     upload_recording_events(conn, df)
+    logging.info("Recording data uploaded.")
 
     conn.close()
 
