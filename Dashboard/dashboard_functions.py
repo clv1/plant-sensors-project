@@ -42,7 +42,7 @@ def load_all_data(conn: pyodbc.Connection) -> pd.DataFrame:
     return data
 
 
-def load_last_24_data(conn: pyodbc.Connection) -> pd.DataFrame:
+def load_last_24_data(conn) -> pd.DataFrame:
     """Loads recordings data taken in the last 24 hours as a dataframe."""
     query = """SELECT s_alpha.recording_event.*, s_alpha.plant.name, s_alpha.plant.image_url,
                 s_alpha.botanist.first_name, s_alpha.botanist.last_name,
