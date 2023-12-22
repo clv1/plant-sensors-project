@@ -1,4 +1,4 @@
-# plant-sensors-project
+# Plants Sensors Project
 Plant sensors project for LMNH.
 
 
@@ -7,6 +7,7 @@ Run the command `bash shell_scripts/setup.sh` to setup the project locally.
 This will:
 - install the necessary requirements for the pipeline and dashboard.
 - configure the database schema.
+- Used for local testing
 
 ## Requirements
 - `pip3 install -r requirements.txt`
