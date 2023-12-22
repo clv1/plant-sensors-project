@@ -1,5 +1,5 @@
 """Contains functions that extract the plant data from the plants api"""
-
+import logging
 from multiprocessing import Pool
 import requests
 
@@ -25,7 +25,9 @@ def extract_main() -> list[list[dict]]:
         range(13, 26)), list(range(26, 39)), list(range(39, 50))]
 
     with Pool(processes=4) as pool:
+        logging.info('Extraction Started')
         data_segments = pool.map(get_plant_data, plant_segments)
+        logging.info('Extraction Complete')
 
     return data_segments
 
