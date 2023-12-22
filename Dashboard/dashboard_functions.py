@@ -60,7 +60,7 @@ def load_last_24_data(conn: pyodbc.Connection) -> pd.DataFrame:
 
 
 def get_unique_plant_ids(plants_data: pd.DataFrame) -> pd.DataFrame:
-    """Returns a dataframe of all the unique plant_id's in ascedning order"""
+    """Returns a dataframe of all the unique plant_id's in ascending order"""
 
     plants_sorted_by_plant_id = plants_data.sort_values(
         by='plant_id', ascending=True)

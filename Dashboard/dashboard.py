@@ -15,7 +15,6 @@ if __name__ == "__main__":
     st.title(
         ":bar_chart: :potted_plant: LMNH Plant Analysis :potted_plant: :bar_chart:")
 
-    load_dotenv()
     connection = get_db_connection()
 
     plants_data = load_all_data(connection)
@@ -35,7 +34,7 @@ if __name__ == "__main__":
         options=get_unique_plant_ids(plants_data).plant_id
     )
     add_selectbox = st.sidebar.selectbox(
-        "Select this box if you would like to view data for the past 24 hours?",
+        "Select this box if you would like to view data for the past 24 hours",
         ("All data", "Last 24 Hours")
     )
 
@@ -48,7 +47,7 @@ if __name__ == "__main__":
     col1.metric("Total Number of Plants", num_of_plants)
     col2.write(get_botanists_and_plants(plants_data))
 
-    # TEMPERATURE AND MOISTURE OF THE PLANTS AS TIME HAS GONE
+    # TEMPERATURE OVERTIME
     st.subheader('Temperature overtime', divider='rainbow')
 
     if add_selectbox == "All data":
@@ -59,7 +58,7 @@ if __name__ == "__main__":
         st.altair_chart(make_temperature_graph(
             plants_data_24, plant_id), use_container_width=True)
 
-    # MOISTURE OF PLANTS AS TIME HAS GONE
+    # MOISTURE OVERTIME
     st.subheader('Moisture overtime', divider='rainbow')
 
     if add_selectbox == "All data":
@@ -87,5 +86,5 @@ if __name__ == "__main__":
 
     # COUNTRIES AND PLANTS
 
-    st.subheader('The Diveristy of the plants based on Country')
+    st.subheader('The Diversity of the plants based on Country')
     st.altair_chart(make_country_pie_chart(plants_data))

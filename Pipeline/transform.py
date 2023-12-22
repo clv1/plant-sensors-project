@@ -139,4 +139,4 @@ if __name__ == "__main__":
     plant_data_ = extract_main()
     dataframe = transform_main(plant_data_)
 
-    dataframe.to_csv("example_dataset_6.csv", index=False)
+    print(dataframe)
