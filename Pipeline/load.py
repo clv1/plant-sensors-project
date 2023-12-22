@@ -1,6 +1,7 @@
 """Contains functions that upload clean data to all tables in the database."""
 import logging
 from os import environ
+import logging
 from dotenv import load_dotenv
 import pandas as pd
 import pyodbc
@@ -18,9 +19,11 @@ def get_connection() -> pyodbc.Connection | None:
     try:
         connection = pyodbc.connect(conn_str)
         print("Connected to the database successfully!")
+        logging.info("Database connection acquired.")
         return connection
     except pyodbc.Error as e:
         print("Error in connection: ", e)
+        logging.info("Error in connection.")
 
 
 def bulk_insert(connection: pyodbc.Connection, insert_query: str, insert_data: list[tuple]) -> None:
@@ -226,6 +229,7 @@ def load_main(df: pd.DataFrame) -> None:
     load_dotenv()
 
     logging.info("Getting Database Connection.")
+
     conn = get_connection()
     logging.info("Connected to the Database.")
 
@@ -236,10 +240,12 @@ def load_main(df: pd.DataFrame) -> None:
     logging.info("Location data uploaded.")
 
     upload_plants(conn, df)
-    logging.info("Plant data uploaded.")
+    logging.info("Plants data uploaded.")
 
     upload_recording_events(conn, df)
-    logging.info("Recording data uploaded.")
+    logging.info("Recording event data uploaded.")
+
+
 
     conn.close()
 
