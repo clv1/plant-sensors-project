@@ -7,10 +7,6 @@ The pipeline triggers every minute and also send emails when a plant is below or
 
 
 # SETUP
-Run the command `bash shell_scripts/setup.sh` to setup the project locally.
-This will:
-- install the necessary requirements for the pipeline and dashboard.
-- configure the database schema.
 
 ## Requirements
 For each folder there will be a `requirements.txt` file. Once you are in the folder, you can run the following command:
@@ -25,6 +21,12 @@ For each folder there will be a `requirements.txt` file. Once you are in the fol
     - DB_NAME
     - DB_PASSWORD
     - DB_SCHEMA
+
+### Testing locally
+Run the command `bash shell_scripts/setup.sh` to setup and test the project locally.
+This will:
+- install the necessary requirements for the pipeline and dashboard.
+- configure the database schema.
 
 
 ## Files
@@ -57,7 +59,7 @@ plants vitals and sends an email alert when a unhealthy plant is detected.
 `Dashboard`:
 - `dashboard_functions.py`: This script contains all the functions for `dashboard.py`
 - `dashboard.py`: This script creates the dashboard using streamlit
-- `Dockerfile`: This is a Dockerfile and creates a docker image that runs the dashboard
+- `Dockerfile`: a Dockerfile and creates a docker image that runs the dashboard
 
 ## To make a docker image:
 
