@@ -85,7 +85,9 @@ resource "aws_ecs_task_definition" "task-dash" {
 resource "aws_ecs_service" "dashboard-service" {
     name = "c9-persnickety-dashboard-service"
     cluster = data.aws_ecs_cluster.c9-cluster.id
+
     task_definition = "arn:aws:ecs:eu-west-2:129033205317:c9-persnickety-dashboard-td-t:latest" 
+
     desired_count = 1
     launch_type = "FARGATE"
     network_configuration {
@@ -105,7 +107,7 @@ resource "aws_iam_role" "iam_for_persnickety_tf" {
                     Service: "lambda.amazonaws.com"
                 },
                 Action: "sts:AssumeRole",
-            }, 
+            },
         ],
   })
 }
@@ -135,21 +137,25 @@ resource "aws_lambda_permission" "execute-lambda-permission" {
     source_arn = aws_cloudwatch_event_rule.sfn-trigger.arn
 }
 
-resource "aws_iam_role" "iam_for_lambda_ps_t" {
-  name               = "iam_for_lambda_ps_"
-  assume_role_policy = jsonencode({
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Effect": "Allow",
-      "Principal": {
-        "Service": "lambda.amazonaws.com"
-      },
-      "Action": "sts:AssumeRole"
+
+resource "aws_lambda_function" "c9-persnickety-lambda" {
+    function_name = "c9-persnickety-lambda"
+    role = aws_iam_role.iam_for_lambda_ps_tf.arn
+    image_uri = "129033205317.dkr.ecr.eu-west-2.amazonaws.com/c9-persnickety-lambda-repo-tf:latest"
+    package_type = "Image"
+    environment {
+      variables = {
+      DATABASE=var.DB_NAME
+      HOST=var.DB_HOST
+      PASSWORD=var.DB_PASSWORD
+      PORT=var.DB_PORT
+      USERNAME=var.DB_USER
     }
-  ]
-})
+
+    }
+  
 }
+
 
 
 resource "aws_iam_role" "trust_relationship" {

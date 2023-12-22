@@ -19,6 +19,10 @@ MAX_MOISTURE = 100
 
 def make_plant_dataframe(plant_data: list[dict]) -> list[list[str]]:
     """Gets plant data and collates it into a dataframe"""
+
+    if not isinstance(plant_data, list):
+        raise TypeError('Plant data must be a list of dictionaries')
+
     data = []
 
     for plant in plant_data:
