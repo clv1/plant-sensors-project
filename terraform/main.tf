@@ -17,7 +17,19 @@ data "aws_ecs_cluster" "c9-cluster" {
 data "aws_iam_role" "execution-role" {
     name = "ecsTaskExecutionRole"
 }
+data "aws_iam_policy_document" "state_machine_role_policy" {
+  
+  statement {
+    effect = "Allow"
 
+    actions = [
+      "lambda:InvokeFunction"
+    ]
+
+    resources = ["${aws_lambda_function.c9-persnickety-lambda.arn}:*"]
+  }
+  
+}
 
 # Make the ECR repositories
 
@@ -139,21 +151,7 @@ resource "aws_iam_role" "iam_for_lambda_ps_t" {
 })
 }
 
-resource "aws_iam_role" "invoke_lambda" {
-  name               = "invoke_lambda"
-  assume_role_policy = jsonencode({
-    "Version": "2012-10-17",
-    "Statement": [
-        {
-            "Action": [
-                "lambda:InvokeFunction"
-            ],
-            "Resource": "*",
-            "Effect": "Allow"
-        }
-    ]
-})
-}
+
 resource "aws_iam_role" "trust_relationship" {
   name               = "trust_relationship"
   assume_role_policy = jsonencode({
@@ -189,11 +187,12 @@ resource "aws_sfn_state_machine" "c9-persnickety-stm-t" {
         "Cluster": "arn:aws:ecs:eu-west-2:129033205317:cluster/c9-ecs-cluster",
         "TaskDefinition": "arn:aws:ecs:eu-west-2:129033205317:task-definition/c9-persnickety-pipeline-t:1"
       },
-      "Next": "RunLambdaFunction"
+      "Next": "InvokeLambda"
     },
-    "RunLambdaFunction": {
+    "States": {
+    "InvokeLambda": {
       "Type": "Task",
-      "Resource": "arn:aws:lambda:eu-west-2:129033205317:function:c9-persnickety-lambda",
+      "Resource": "arn:aws:lambda:eu-west-2:129033205317:function:c9-anu-lambda-tf",
       "End": true
     }
   }
@@ -242,7 +241,7 @@ resource "aws_iam_policy" "step-function-policy" {
 }
 
 resource "aws_iam_role_policy_attachment" "attach-execution-policy" {
-  role       = aws_iam_role.run-step-function-role.name
+  role       = data.aws_iam_role.execution-role.name
   policy_arn = aws_iam_policy.step-function-policy.arn
 }
 
