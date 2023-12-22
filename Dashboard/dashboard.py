@@ -87,3 +87,4 @@ if __name__ == "__main__":
 
     st.subheader('The Diversity of the plants based on Country')
     st.altair_chart(make_country_pie_chart(plants_data))
+

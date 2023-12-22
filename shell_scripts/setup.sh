@@ -8,6 +8,11 @@ pip3 install -r Dashboard/requirements.txt
 echo -e "\nDASHBOARD REQUIREMENTS INSTALLED."
 sleep 1
 
+# Install DB connection driver
+source shell_scripts/driver_download.sh
+echo -e "\nDATABASE DRIVER INSTALLED"
+sleep 1
+
 # Setup DB Schema
 source shell_scripts/run_schema.sh
 echo -e "\nDATABASE SCHEMA CONFIGURED."
