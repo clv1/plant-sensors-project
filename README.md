@@ -9,7 +9,8 @@ This will:
 - configure the database schema.
 
 ## Requirements
-- `pip3 install -r requirements.txt`
+- Create and activate a new virtual environment
+- Run `bash shell_scripts/setup.sh`
 
 ## AWS resources
 
