@@ -3,41 +3,44 @@ from os import environ
 from dotenv import load_dotenv
 import pandas as pd
 import boto3
-import pyodbc
-from datetime import datetime, timedelta
-
-
+from datetime import datetime
+from pymssql import connect
 
 
 def get_db_connection():
-    """Connects to the database"""
-    load_dotenv()
-    conn_str = f'DRIVER={{ODBC Driver 17 for SQL Server}};SERVER={environ["DB_HOST"]};DATABASE={environ["DB_NAME"]};UID={environ["DB_USER"]};PWD={environ["DB_PASSWORD"]}'
-    # Establish a connection to the database
-    try:
-        connection = pyodbc.connect(conn_str)
-        print("Connected to the database successfully!")
-        return connection
-    except pyodbc.Error as e:
-        print("Error in connection: ", e)
+
+    conn = connect(
+        server=environ["DB_HOST"],
+        port=environ["DB_PORT"],
+        user=environ["DB_USER"],
+        password=environ["DB_PASSWORD"],
+        database=environ["DB_NAME"],
+        as_dict=True
+    )
+
+    return conn
 
 
-connection = get_db_connection()
 
-def load_all_data(conn: pyodbc.Connection) -> pd.DataFrame:
+
+def load_all_data(conn) -> pd.DataFrame:
     """Loads all recording event data as a dataframe."""
-    query = """SELECT s_alpha.recording_event.*, s_alpha.plant.name, s_alpha.plant.image_url,
-                s_alpha.botanist.first_name, s_alpha.botanist.last_name,
-                s_alpha.origin_location.country
-                FROM s_alpha.recording_event
-                JOIN s_alpha.plant
-                ON s_alpha.plant.plant_id = s_alpha.recording_event.plant_id
-                JOIN s_alpha.botanist
-                ON s_alpha.botanist.botanist_id = s_alpha.recording_event.botanist_id
-                JOIN s_alpha.origin_location
-                ON s_alpha.origin_location.origin_location_id = s_alpha.plant.origin_location_id;"""
-    data = pd.read_sql(query, conn)
-    return data
+
+    query="""SELECT s_alpha.recording_event.*, s_alpha.plant.name, s_alpha.plant.image_url,
+            s_alpha.botanist.first_name, s_alpha.botanist.last_name,
+            s_alpha.origin_location.country
+            FROM s_alpha.recording_event
+            JOIN s_alpha.plant
+            ON s_alpha.plant.plant_id = s_alpha.recording_event.plant_id
+            JOIN s_alpha.botanist
+            ON s_alpha.botanist.botanist_id = s_alpha.recording_event.botanist_id
+            JOIN s_alpha.origin_location
+            ON s_alpha.origin_location.origin_location_id = s_alpha.plant.origin_location_id;"""
+    with conn.cursor() as curr:
+        curr.execute(query)
+        data = curr.fetchall()
+    df = pd.DataFrame(data)
+    return df
 
 def load_current_data(connection):
     df = load_all_data(connection)
@@ -59,8 +62,6 @@ def generate_avg_temp(df, plant:dict):
 # if temp is += 3˚C
 # moisture should not be below -> 0%-5% or >60% (temporary parameters that can be easily adjusted after seeing more data)
 
-client = boto3.client('ses', region_name='eu-west-2')
-
 
 def check_plant_vitals(df: pd.DataFrame) -> list[dict]:
     '''Checks if a plants vitals are healthy, if not unhealthy plants are returned as a list.'''
@@ -81,6 +82,8 @@ def check_plant_vitals(df: pd.DataFrame) -> list[dict]:
 
 def send_email(unhealthy_plants:list[dict]):
     plant_warning  = generate_html_string(unhealthy_plants)
+    client = boto3.client('ses', region_name='eu-west-2', aws_access_key_id=environ["ACCESS_KEY_ID"],
+                           aws_secret_access_key=environ["SECRET_ACCESS_KEY"])
    
     response = client.send_email(
         Destination={
@@ -124,11 +127,13 @@ def generate_html_string(plants:list[dict]) -> str:
     warning_string += '</body>'
     return warning_string 
 
-def handler(event, context=None):
+def handler(event=None, context=None):
+    load_dotenv()
     connection = get_db_connection()
     df = load_all_data(connection)
     unhealthy_plants = check_plant_vitals(df)
     if unhealthy_plants != []:
-        send_email(unhealthy_plants)
+        return send_email(unhealthy_plants)
+    return None
 
 

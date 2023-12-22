@@ -82,18 +82,18 @@ resource "aws_ecs_task_definition" "task-dash" {
     execution_role_arn = data.aws_iam_role.execution-role.arn
 }
 # Starts the dashboard service
-# resource "aws_ecs_service" "dashboard-service" {
-#     name = "c9-persnickety-dashboard-service"
-#     cluster = data.aws_ecs_cluster.c9-cluster.id
-#     task_definition = "arn:aws:ecs:eu-west-2:129033205317:c9-persnickety-dashboard-td-t:latest" 
-#     desired_count = 1
-#     launch_type = "FARGATE"
-#     network_configuration {
-#       subnets = ["subnet-0d0b16e76e68cf51b", "subnet-081c7c419697dec52", "subnet-02a00c7be52b00368"]
-#       security_groups = ["sg-0ce150705484be1ce"]
-#       assign_public_ip = true
-#     }
-# }
+resource "aws_ecs_service" "dashboard-service" {
+    name = "c9-persnickety-dashboard-service"
+    cluster = data.aws_ecs_cluster.c9-cluster.id
+    task_definition = "arn:aws:ecs:eu-west-2:129033205317:c9-persnickety-dashboard-td-t:latest" 
+    desired_count = 1
+    launch_type = "FARGATE"
+    network_configuration {
+      subnets = ["subnet-0d0b16e76e68cf51b", "subnet-081c7c419697dec52", "subnet-02a00c7be52b00368"]
+      security_groups = ["sg-0ce150705484be1ce"]
+      assign_public_ip = true
+    }
+}
 resource "aws_iam_role" "iam_for_persnickety_tf" {
   name               = "iam_for_persnickety_tf"
   assume_role_policy = jsonencode({
