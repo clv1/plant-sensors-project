@@ -1,4 +1,6 @@
 python-dotenv
+altair
+streamlit==1.29.0
 pandas
+ipykernel
 pyodbc
---no-binary :all: pyodbc 
